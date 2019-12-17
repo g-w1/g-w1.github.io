@@ -2,12 +2,14 @@
 <html>
 <body>
 <h1>How many Burpees does Sensei Eric need to do?</h1>
+  <p id = "output"></p>
 <script language="javascript">
   let date = new Date();
   const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
   const secondDate = new Date(2008, 1, 22);
   const diffDays = Math.round(Math.abs((date - secondDate) / oneDay));
-
+  document.getElementById("output").indexHTML = diffDays;
+  
   </script>
 </body>
 </html>
