@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <style>
+            body {color : royalblue;}
+            p1 {color: royalblue}
+            h1 {color: royalblue;}
+            p {color: darkgray}
+        </style>
+    </head>
 <body>
 	
 <h1>How many Burpees does Sensei Eric need to do?</h1>
+<p id="output"></p>
+    <p1>49 + 25 per day after 7/18/19</p1>
+    
 <script>
   let date = new Date();
   var oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
   var secondDate = new Date(2019, 6, 22);
   var diffDays = Math.round(Math.abs((date - secondDate) / oneDay));
-  document.write((diffDays * 25) +29);
+  var numberBurpees = ((diffDays * 25) +29);
+  document.getElementById('output').innerHTML = numberBurpees;
+    //just to show that jacob wrote this
   
   </script>
-  <p>49 + 25 per day after 7/18/19</p>
 </body>
 </html>
