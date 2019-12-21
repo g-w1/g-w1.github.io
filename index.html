@@ -1,25 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
+      <link rel="stylesheet" type="text/css" href="index.css">
 <title>Accountability</title>
         <style>
-            body {color : royalblue;}
-            p {color: royalblue;
-                font-size: 50px;
- }
-            h1 {color: royalblue;
-}
-            #truth {color: darkgray;
-              font-size: 30px;
-}
-            #output1{
-              font-size: 15px;
-              font-color: royalblue;
-
-            }
+            
         </style>
     </head>
-<body vlink = "blue">
+<body a link ="blue" vlink = "blue">
 Burpees Done: <input type="text" id="input" value="1">
 <button onclick="pressed()">Refresh</button>
     <center>
@@ -28,17 +16,6 @@ Burpees Done: <input type="text" id="input" value="1">
     <p id = "truth">50 + 25 per day after 7/18/19</p><br/>
         <p id = "output1"></p></center>
     
-<script>
-  pressed()
-  function pressed(){let date = new Date();
-  var oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-  var secondDate = new Date(2019, 6, 22);
-  var diffDays = Math.round(Math.abs((date - secondDate) / oneDay));
-  var numberDone = Number(document.getElementById("input").value);
-  var numberBurpees = ((diffDays * 25) +50 -numberDone);
-  document.getElementById('output').innerHTML = numberBurpees;
-    //just to show that jacob wrote this
-  document.getElementById('output1').innerHTML = date;}
-  </script>
+<script src = "index.js"></script>
 </body>
 </html>
