@@ -12,3 +12,7 @@ body {color : royalblue;}
               font-color: royalblue;
 
             }
+            button:hover{
+            	 background-color : blue;
+            	font-size : 105%;
+            }
