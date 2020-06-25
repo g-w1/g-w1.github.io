@@ -1,3 +1,8 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="index.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/a17t@latest/dist/a17t.css">
+	<title>Jacob Goldman-Wetzler</title>
+</head>
 # Jacob Goldman-Wetzler
 
 ## Social Media
@@ -34,5 +39,6 @@ I don't use any social media other than Github (if that even counts)
 
 ### Recurse Center
 
-![logo](https://duckduckgo.com/i/5cb73994.png)
+![](https://duckduckgo.com/i/5cb73994.png)
+
 [Recuse Center](https://recurse.com)
