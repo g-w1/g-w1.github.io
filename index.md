@@ -29,16 +29,31 @@ I don't use any social media other than Github (if that even counts)
 
 [textedit (very creative name)](https://github.com/g-w1/textedit)
 
-### Polyglot
+### Machine Learning
 
 #### Machine learning in python and js:
 
-[first-ML](g-w1.github.io)
+[first-ML](https://github.com/g-w1/textedit)
+[first-AE](https://github.com/g-w1/textedit)
+
+#### Science Fair Project On The Topic
+
+[How does the accuracy of a neural network change with the size of the training data?](https://docs.google.com/presentation/d/1p71IMD9_1zEA724_8iLdLDyxHIbSYVgK_1KfaL_SaFw/edit?usp=sharing)
 
 ## Programs
 
 ### Recurse Center
 
+The Recurse Center is a "self-directed, community-driven educational retreat for programmers based in New York City".
+
+I was in the m2'20 batch there.
+
 ![](https://duckduckgo.com/i/5cb73994.png)
 
-[Recuse Center](https://recurse.com)
+[Recurse Center](https://recurse.com)
+
+## Other
+
+### Dotfiles (config files)
+
+[g-w1/dotfiles](https://github.com/g-w1/dotfiles)
