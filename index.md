@@ -2,10 +2,20 @@
 
 ## Projects
 
-### Platformer in python:
+### Python
 
-### Machine Learning in python/js:
+#### Platformer in python:
 
-### Text Editor in rust:
+#### Ultimate Tic Tac Toe
 
-###
+### Rust
+
+#### Text Editor in rust:
+
+### Polyglot
+
+#### Machine learning in python and js:
+
+## Programs
+
+### Recurse Center
