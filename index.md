@@ -1,5 +1,9 @@
 # Jacob Goldman-Wetzler
 
+## Social Media 🤣
+
+### [github.com/g-w1/](https://github.com/g-w1)
+
 ## Projects
 
 ### Python
@@ -19,3 +23,5 @@
 ## Programs
 
 ### Recurse Center
+
+[Recuse Center](https://recurse.com)
