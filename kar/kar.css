@@ -1,17 +1,21 @@
-body {color : royalblue;}
-            p {color: royalblue;
-                font-size: 50px;
- }
-            h1 {color: royalblue;
+body {
+  color: royalblue;
 }
-            #truth {color: darkgray;
-              font-size: 30px;
+p {
+  color: royalblue;
+  font-size: 50px;
 }
-            #output1{
-              font-size: 15px;
-              font-color: royalblue;
-
-            }
-            button:hover{
-            	 background-color : white;
-            }
+h1 {
+  color: royalblue;
+}
+#truth {
+  color: darkgray;
+  font-size: 30px;
+}
+#output1 {
+  font-size: 15px;
+  font-color: royalblue;
+}
+button:hover {
+  background-color: white;
+}
