@@ -1,14 +1,14 @@
 function pressed() {
   let date = new Date();
-  var oneDay = 24 * 60 * 60 * 1000;
-  var secondDate = new Date(2019, 6, 22);
-  var diffDays = Math.round(Math.abs((date - secondDate) / oneDay));
-  var numberDone = Number(document.getElementById("input1").value);
-  var numberBurpees = ((diffDays * 25) + 50 - numberDone);
+  let oneDay = 24 * 60 * 60 * 1000;
+  let secondDate = new Date(2019, 6, 22);
+  let diffDays = Math.round(Math.abs((date - secondDate) / oneDay));
+  let numberDone = Number(document.getElementById("input1").value);
+  let numberBurpees = ((diffDays * 25) + 50 - numberDone);
   if (numberBurpees < 0) {
     numberBurpees = 0;
   }
   document.getElementById('output').innerHTML = numberBurpees;
   document.getElementById('output1').innerHTML = date;
 }
-pressed()
+pressed();

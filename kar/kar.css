@@ -14,7 +14,7 @@ h1 {
 }
 #output1 {
   font-size: 15px;
-  font-color: royalblue;
+  color: royalblue;
 }
 button:hover {
   background-color: white;
