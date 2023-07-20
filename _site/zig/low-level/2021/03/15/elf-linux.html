@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Learning About ELF With Zig | Jacob’s Blog</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="Learning About ELF With Zig" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="See part 2 for this post here" />
+<meta property="og:description" content="See part 2 for this post here" />
+<link rel="canonical" href="http://localhost:4000/blog/zig/low-level/2021/03/15/elf-linux.html" />
+<meta property="og:url" content="http://localhost:4000/blog/zig/low-level/2021/03/15/elf-linux.html" />
+<meta property="og:site_name" content="Jacob’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-03-15T08:47:21-04:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Learning About ELF With Zig" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2021-03-15T08:47:21-04:00","datePublished":"2021-03-15T08:47:21-04:00","description":"See part 2 for this post here","headline":"Learning About ELF With Zig","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/blog/zig/low-level/2021/03/15/elf-linux.html"},"url":"http://localhost:4000/blog/zig/low-level/2021/03/15/elf-linux.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/blog/feed.xml" title="Jacob&apos;s Blog" />
+</head>
+
+
+  <body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Jacob&#39;s Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/projects/">Projects</a><a class="page-link" href="/blog/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Learning About ELF With Zig</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-03-15T08:47:21-04:00" itemprop="datePublished">Mar 15, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <blockquote>
+  <p>See part 2 for this post <a href="https://g-w1.github.io/blog/zig/low-level/compiler/2021/05/23/bf-compile.html">here</a></p>
+</blockquote>
+
+<p>ELF is an object format that is widely used in Linux and other modern operating systems. I wanted to learn about it to become more fluent in low-level code as well as start contributing to the zig self-hosted ELF linker backend.</p>
+
+<p>This post will go through how I learned about the ELF format and applied it to create a minimal linker. I then used this linker on some x86_64 brainfuck code. The next post will go over how I linked and created the brainfuck code, since it relates to this “linker” a little.</p>
+
+<blockquote>
+  <p>Note: this “linker” does no relocations so it is not viable to link actual projects with functions and stuff. It was just a fun project to learn about ELF/x64 code.</p>
+</blockquote>
+
+<h1 id="setting-things-up">Setting Things Up</h1>
+
+<p>ELF is a binary file format, meaning that humans can not read it without special tools. Here are some of the tools I used:</p>
+
+<ul>
+  <li>hexl-mode - an emacs mode to read binary files by converting them to human-readable hex</li>
+  <li>xxd - print binary files as hex - useful for diffing binary files in a human readable way</li>
+  <li>readelf - this was very helpful for making sure my ELF was conforming to the ELF spec/seeing what the operating system thought of my ELF file.</li>
+  <li>objdump - this was useful for making sure my sections/section header table matched the spec (NOTE: llvm-objdump was much more helpful here as it was better at detecting errors/showing them <img src="/blog/assets/llvm-od.png" alt="llvm-objdump is better" />)</li>
+</ul>
+
+<h1 id="starting-to-generate-code">Starting to generate code</h1>
+
+<p>This is one of the simplest ELF files I could find online - source <a href="http://muppetlabs.com/~breadbox/software/tiny/teensy.html">here</a> - it really helped me have a good mental model of the ELF file format. Below, <code class="language-plaintext highlighter-rouge">ehdr</code> stands for the ELF header, and <code class="language-plaintext highlighter-rouge">phdr</code> stands for the program header, which tells the OS how to load the segment in to memory.</p>
+<div class="language-nasm highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">; nasm -f bin -o minimal this.asm</span>
+<span class="k">BITS</span> <span class="mi">64</span>
+  <span class="nf">org</span> <span class="mh">0x400000</span>
+
+<span class="nl">ehdr:</span>           <span class="c1">; Elf64_Ehdr</span>
+  <span class="kd">db</span> <span class="mh">0x7f</span><span class="p">,</span> <span class="s">"ELF"</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span> <span class="c1">; e_ident</span>
+  <span class="kd">times</span> <span class="mi">8</span> <span class="nv">db</span> <span class="mi">0</span>
+  <span class="kd">dw</span>  <span class="mi">2</span>         <span class="c1">; e_type</span>
+  <span class="kd">dw</span>  <span class="mh">0x3e</span>      <span class="c1">; e_machine</span>
+  <span class="kd">dd</span>  <span class="mi">1</span>         <span class="c1">; e_version</span>
+  <span class="kd">dq</span>  <span class="nv">_start</span>    <span class="c1">; e_entry</span>
+  <span class="kd">dq</span>  <span class="nv">phdr</span> <span class="o">-</span> <span class="kc">$$</span> <span class="c1">; e_phoff</span>
+  <span class="kd">dq</span>  <span class="mi">0</span>         <span class="c1">; e_shoff</span>
+  <span class="kd">dd</span>  <span class="mi">0</span>         <span class="c1">; e_flags</span>
+  <span class="kd">dw</span>  <span class="nv">ehdrsize</span>  <span class="c1">; e_ehsize</span>
+  <span class="kd">dw</span>  <span class="nv">phdrsize</span>  <span class="c1">; e_phentsize</span>
+  <span class="kd">dw</span>  <span class="mi">1</span>         <span class="c1">; e_phnum</span>
+  <span class="kd">dw</span>  <span class="mi">0</span>         <span class="c1">; e_shentsize</span>
+  <span class="kd">dw</span>  <span class="mi">0</span>         <span class="c1">; e_shnum</span>
+  <span class="kd">dw</span>  <span class="mi">0</span>         <span class="c1">; e_shstrndx</span>
+  <span class="no">ehdrsize</span><span class="kd">  equ</span>  <span class="kc">$</span> <span class="o">-</span> <span class="nv">ehdr</span>
+
+<span class="nl">phdr:</span>           <span class="c1">; Elf64_Phdr</span>
+  <span class="kd">dd</span>  <span class="mi">1</span>         <span class="c1">; p_type</span>
+  <span class="kd">dd</span>  <span class="mi">5</span>         <span class="c1">; p_flags</span>
+  <span class="kd">dq</span>  <span class="mi">0</span>         <span class="c1">; p_offset</span>
+  <span class="kd">dq</span>  <span class="kc">$$</span>        <span class="c1">; p_vaddr</span>
+  <span class="kd">dq</span>  <span class="kc">$$</span>        <span class="c1">; p_paddr</span>
+  <span class="kd">dq</span>  <span class="nv">filesize</span>  <span class="c1">; p_filesz</span>
+  <span class="kd">dq</span>  <span class="nv">filesize</span>  <span class="c1">; p_memsz</span>
+  <span class="kd">dq</span>  <span class="mh">0x1000</span>    <span class="c1">; p_align</span>
+  <span class="no">phdrsize</span><span class="kd">  equ</span>  <span class="kc">$</span> <span class="o">-</span> <span class="nv">phdr</span>
+
+<span class="nl">_start:</span>
+  <span class="nf">mov</span> <span class="nb">rax</span><span class="p">,</span> <span class="mi">231</span> <span class="c1">; sys_exit_group</span>
+  <span class="nf">mov</span> <span class="nb">rdi</span><span class="p">,</span> <span class="p">[</span><span class="nv">ecode</span><span class="p">]</span>  <span class="c1">; int status</span>
+  <span class="nf">syscall</span>
+<span class="nl">ecode:</span>
+  <span class="kd">db</span> <span class="mi">42</span>
+
+<span class="no">filesize</span><span class="kd"> equ</span>  <span class="kc">$</span> <span class="o">-</span> <span class="kc">$$</span>
+</code></pre></div></div>
+
+<p>Since this is just (intel) assembly, we can represent these as structs in zig:</p>
+
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">ElfHeader</span> <span class="o">=</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="c">/// e_ident</span>
+    <span class="n">magic</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="s">"</span><span class="se">\x7f</span><span class="s">ELF"</span><span class="o">.*</span><span class="p">,</span>
+    <span class="c">/// 32 bit (1) or 64 (2)</span>
+    <span class="n">class</span><span class="p">:</span> <span class="kt">u8</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="c">/// endianness little (1) or big (2)</span>
+    <span class="n">endianness</span><span class="p">:</span> <span class="kt">u8</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="c">/// ELF version</span>
+    <span class="n">version</span><span class="p">:</span> <span class="kt">u8</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="c">/// osabi: we want systemv which is 0</span>
+    <span class="n">abi</span><span class="p">:</span> <span class="kt">u8</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="c">/// abiversion: 0</span>
+    <span class="n">abi_version</span><span class="p">:</span> <span class="kt">u8</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="c">/// paddding</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="p">[</span><span class="mi">_</span><span class="p">]</span><span class="kt">u8</span><span class="p">{</span><span class="mi">0</span><span class="p">}</span> <span class="o">**</span> <span class="mi">7</span><span class="p">,</span>
+
+    <span class="c">/// object type</span>
+    <span class="n">e_type</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+
+    <span class="c">/// arch</span>
+    <span class="n">e_machine</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">0x3e</span><span class="p">)),</span>
+
+    <span class="c">/// version</span>
+    <span class="n">e_version</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u32</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+
+    <span class="c">/// entry point</span>
+    <span class="n">e_entry</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// start of program header</span>
+    <span class="c">/// It usually follows the file header immediately,</span>
+    <span class="c">/// making the offset 0x34 or 0x40</span>
+    <span class="c">/// for 32- and 64-bit ELF executables, respectively.</span>
+    <span class="n">e_phoff</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u64</span><span class="p">,</span> <span class="mi">0x40</span><span class="p">)),</span>
+
+    <span class="c">/// e_shoff</span>
+    <span class="c">/// start of section header table</span>
+    <span class="n">e_shoff</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// ???</span>
+    <span class="n">e_flags</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="o">.</span><span class="p">{</span><span class="mi">0</span><span class="p">}</span> <span class="o">**</span> <span class="mi">4</span><span class="p">,</span>
+
+    <span class="c">/// Contains the size of this header,</span>
+    <span class="c">/// normally 64 Bytes for 64-bit and 52 Bytes for 32-bit format.</span>
+    <span class="n">e_ehsize</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">0x40</span><span class="p">)),</span>
+
+    <span class="c">/// size of program header</span>
+    <span class="n">e_phentsize</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">56</span><span class="p">)),</span>
+
+    <span class="c">/// number of entries in program header table</span>
+    <span class="n">e_phnum</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+
+    <span class="c">/// size of section header table entry</span>
+    <span class="n">e_shentsize</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">0x40</span><span class="p">)),</span>
+
+    <span class="c">/// number of section header entries</span>
+    <span class="n">e_shnum</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// index of section header table entry that contains section names (.shstrtab)</span>
+    <span class="n">e_shstrndx</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">const</span> <span class="n">PF_X</span> <span class="o">=</span> <span class="mi">0x1</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">PF_W</span> <span class="o">=</span> <span class="mi">0x2</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">PF_R</span> <span class="o">=</span> <span class="mi">0x4</span><span class="p">;</span>
+
+<span class="k">const</span> <span class="n">ProgHeader</span> <span class="o">=</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="c">/// type of segment</span>
+    <span class="c">/// 1 for loadable</span>
+    <span class="n">p_type</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u32</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+
+    <span class="c">/// segment dependent</span>
+    <span class="c">/// NO PROTECTION</span>
+    <span class="n">p_flags</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u32</span><span class="p">,</span> <span class="n">PF_R</span> <span class="p">|</span> <span class="n">PF_W</span> <span class="p">|</span> <span class="n">PF_X</span><span class="p">)),</span>
+
+    <span class="c">/// offset of the segment in the file image</span>
+    <span class="n">p_offset</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// virtual addr of segment in memory. start of this segment</span>
+    <span class="n">p_vaddr</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u64</span><span class="p">,</span> <span class="n">base_point</span><span class="p">)),</span>
+
+    <span class="c">/// same as vaddr except on physical systems</span>
+    <span class="n">p_paddr</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u64</span><span class="p">,</span> <span class="n">base_point</span><span class="p">)),</span>
+
+    <span class="n">p_filesz</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="n">p_memsz</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// 0 and 1 specify no alignment.</span>
+    <span class="c">/// Otherwise should be a positive, integral power of 2,</span>
+    <span class="c">/// with p_vaddr equating p_offset modulus p_align.</span>
+    <span class="n">p_align</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u64</span><span class="p">,</span> <span class="mi">0x100</span><span class="p">)),</span>
+<span class="p">};</span>
+
+</code></pre></div></div>
+
+<p>Note that we can provide default values for struct values in Zig. This is helpful for constants in the ELF header. Don’t mind the cast function yet, I will get to that soon. I made the default permissions for the program header read write execute for simplicity. In practice, you would use multiple program headers, some for executable code, some for mutable memory, and some for immutable memory.</p>
+
+<h2 id="writing-to-stuff">Writing To Stuff</h2>
+
+<p>Before we write to a file, we must write the headers to a buffer so that we can add the machine code after them (we can do multiple writes to a file, but that is inefficient).</p>
+
+<p>In Zig, we can represent a code buffer as a <code class="language-plaintext highlighter-rouge">std.ArrayList(u8)</code>. Notice how Zig handles generics: a generic structure is just a function that takes a type and returns one:</p>
+
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="n">Container</span><span class="p">(</span><span class="k">comptime</span> <span class="n">Inner</span><span class="p">:</span> <span class="k">type</span><span class="p">)</span> <span class="k">type</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">struct</span> <span class="p">{</span>
+       <span class="n">inside</span><span class="p">:</span> <span class="n">Inner</span><span class="p">,</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+<span class="k">const</span> <span class="n">instance_u32</span> <span class="o">=</span> <span class="n">Container</span><span class="p">(</span><span class="kt">u32</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="py">inside</span> <span class="o">=</span> <span class="mi">1234</span> <span class="p">};</span>
+<span class="k">const</span> <span class="n">instance_string</span> <span class="o">=</span> <span class="n">Container</span><span class="p">([]</span><span class="k">const</span> <span class="kt">u8</span><span class="p">)</span> <span class="p">{</span> <span class="p">.</span><span class="py">inside</span> <span class="o">=</span> <span class="s">"Zig Generics Are Cool"</span> <span class="p">};</span>
+</code></pre></div></div>
+
+<p>Since types are first class values at compile-time in Zig, lets make a function that writes our header structs to out code (<code class="language-plaintext highlighter-rouge">std.ArrayList(u8)</code>).</p>
+
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="n">writeTypeToCode</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="o">*</span><span class="n">std</span><span class="p">.</span><span class="nf">ArrayList</span><span class="p">(</span><span class="kt">u8</span><span class="p">),</span> <span class="k">comptime</span> <span class="n">T</span><span class="p">:</span> <span class="k">type</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">!</span><span class="k">void</span> <span class="p">{</span>
+    <span class="k">inline</span> <span class="k">for</span> <span class="p">(</span><span class="n">std</span><span class="p">.</span><span class="py">meta</span><span class="p">.</span><span class="nf">fields</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="p">|</span><span class="n">f</span><span class="p">|</span> <span class="p">{</span>
+        <span class="k">switch</span> <span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="py">field_type</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kt">u8</span> <span class="o">=&gt;</span> <span class="k">try</span> <span class="n">c</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="nb">@field</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="py">name</span><span class="p">)),</span>
+            <span class="k">else</span> <span class="o">=&gt;</span> <span class="k">try</span> <span class="n">c</span><span class="p">.</span><span class="nf">appendSlice</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">@field</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="py">name</span><span class="p">)),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>There is a lot to unpack in this function. It takes 3 things, the code buffer to write to, the type of the thing to write, and something of that type. Let’s see how we use it first.</p>
+
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// PROGRAM HEADERS</span>
+<span class="k">try</span> <span class="n">writeTypeToCode</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dat</span><span class="p">,</span> <span class="n">ProgHeader</span><span class="p">,</span> <span class="o">.</span><span class="p">{</span>
+    <span class="p">.</span><span class="py">p_filesz</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">filesize</span><span class="p">),</span>
+    <span class="p">.</span><span class="py">p_memsz</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">filesize</span><span class="p">),</span>
+    <span class="p">.</span><span class="py">p_offset</span> <span class="o">=</span> <span class="o">.</span><span class="p">{</span><span class="mi">0</span><span class="p">}</span> <span class="o">**</span> <span class="mi">8</span><span class="p">,</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>This is how we use it: provide our code buffer, the type of the struct and an instance of it. The function iterates over all the fields of the struct at comptime with an <code class="language-plaintext highlighter-rouge">inline for</code> over <a href="https://github.com/ziglang/zig/blob/4e9894cfc4c8e2e1d3e01aa2e3400b295b0ee2df/lib/std/meta.zig#L445-L459">std.meta.fields(T)</a>, switches on the type of that field, if it is just a primitive u8, it just writes that to the code buffer by using the <code class="language-plaintext highlighter-rouge">@field</code> builtin. That builtin allows you to get/set a field of a struct with a comptime known string (<code class="language-plaintext highlighter-rouge">[]const u8</code>). Now heres where it gets interesting, lets say we have a field like this:</p>
+
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">/// object type</span>
+<span class="n">e_type</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span> <span class="c">// 2 in little endian form; executable</span>
+</code></pre></div></div>
+<p>This is an array of 2 <code class="language-plaintext highlighter-rouge">u8</code>s. So this would use the else case in the switch as the type is <code class="language-plaintext highlighter-rouge">[2]u8</code>, not <code class="language-plaintext highlighter-rouge">u8</code>:
+<code class="language-plaintext highlighter-rouge">else =&gt; try c.appendSlice(&amp;@field(s, f.name)),</code> We can coerce any array in Zig (<code class="language-plaintext highlighter-rouge">[N]T</code>) to a slice (<code class="language-plaintext highlighter-rouge">[]T</code>) (slices are just a <code class="language-plaintext highlighter-rouge">struct { ptr: [*]T, len: usize }</code> behind the scenes) with the address-of operator <code class="language-plaintext highlighter-rouge">&amp;</code> (really, a <code class="language-plaintext highlighter-rouge">*[N]T</code> coerces to a <code class="language-plaintext highlighter-rouge">[]T</code> and <code class="language-plaintext highlighter-rouge">&amp;</code> just gives us the pointer). We do this and then append that slice to the code buffer.</p>
+
+<p>In my opinion, this is a pretty cool example of compile time meta-programming in Zig.</p>
+
+<blockquote>
+  <p>Note: An <code class="language-plaintext highlighter-rouge">inline for</code> is a <code class="language-plaintext highlighter-rouge">for</code> loop that the compiler <em>must</em> unwrap. If it can’t unwrap it, it is a compile error. This is useful when iterating over data that you know is known at comptime. <code class="language-plaintext highlighter-rouge">std.meta.fields</code> on a struct returns a <code class="language-plaintext highlighter-rouge">comptime []const @import("builtin").TypeInfo.StructField</code>. Here is the whole function:</p>
+  <div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="n">fields</span><span class="p">(</span><span class="k">comptime</span> <span class="n">T</span><span class="p">:</span> <span class="k">type</span><span class="p">)</span> <span class="k">switch</span> <span class="p">(</span><span class="nb">@typeInfo</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="p">{</span>
+    <span class="p">.</span><span class="py">Struct</span> <span class="o">=&gt;</span> <span class="p">[]</span><span class="k">const</span> <span class="n">TypeInfo</span><span class="p">.</span><span class="py">StructField</span><span class="p">,</span>
+    <span class="p">.</span><span class="py">Union</span> <span class="o">=&gt;</span> <span class="p">[]</span><span class="k">const</span> <span class="n">TypeInfo</span><span class="p">.</span><span class="py">UnionField</span><span class="p">,</span>
+    <span class="p">.</span><span class="py">ErrorSet</span> <span class="o">=&gt;</span> <span class="p">[]</span><span class="k">const</span> <span class="n">TypeInfo</span><span class="p">.</span><span class="py">Error</span><span class="p">,</span>
+    <span class="p">.</span><span class="py">Enum</span> <span class="o">=&gt;</span> <span class="p">[]</span><span class="k">const</span> <span class="n">TypeInfo</span><span class="p">.</span><span class="py">EnumField</span><span class="p">,</span>
+    <span class="k">else</span> <span class="o">=&gt;</span> <span class="nb">@compileError</span><span class="p">(</span><span class="s">"Expected struct, union, error set or enum type, found '"</span> <span class="o">++</span> <span class="nb">@typeName</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">++</span> <span class="s">"'"</span><span class="p">),</span>
+<span class="p">}</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">switch</span> <span class="p">(</span><span class="nb">@typeInfo</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="p">{</span>
+        <span class="p">.</span><span class="py">Struct</span> <span class="o">=&gt;</span> <span class="p">|</span><span class="n">info</span><span class="p">|</span> <span class="n">info</span><span class="p">.</span><span class="py">fields</span><span class="p">,</span>
+        <span class="p">.</span><span class="py">Union</span> <span class="o">=&gt;</span> <span class="p">|</span><span class="n">info</span><span class="p">|</span> <span class="n">info</span><span class="p">.</span><span class="py">fields</span><span class="p">,</span>
+        <span class="p">.</span><span class="py">Enum</span> <span class="o">=&gt;</span> <span class="p">|</span><span class="n">info</span><span class="p">|</span> <span class="n">info</span><span class="p">.</span><span class="py">fields</span><span class="p">,</span>
+        <span class="p">.</span><span class="py">ErrorSet</span> <span class="o">=&gt;</span> <span class="p">|</span><span class="n">errors</span><span class="p">|</span> <span class="n">errors</span><span class="o">.?</span><span class="p">,</span> <span class="c">// must be non global error set</span>
+        <span class="k">else</span> <span class="o">=&gt;</span> <span class="nb">@compileError</span><span class="p">(</span><span class="s">"Expected struct, union, error set or enum type, found '"</span> <span class="o">++</span> <span class="nb">@typeName</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">++</span> <span class="s">"'"</span><span class="p">),</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>  </div>
+</blockquote>
+
+<h3 id="cast-function">Cast Function</h3>
+
+<p>We have seen the <code class="language-plaintext highlighter-rouge">cast</code> function in use, but I have not gone over what it does. This is another example of comptime meta-programming in zig. Here is the source:</p>
+
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="n">cast</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="n">anytype</span><span class="p">)</span> <span class="p">[</span><span class="nb">@sizeOf</span><span class="p">(</span><span class="nb">@TypeOf</span><span class="p">(</span><span class="n">i</span><span class="p">))]</span><span class="kt">u8</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">@bitCast</span><span class="p">([</span><span class="nb">@sizeOf</span><span class="p">(</span><span class="nb">@TypeOf</span><span class="p">(</span><span class="n">i</span><span class="p">))]</span><span class="kt">u8</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>If I have a number that is a <code class="language-plaintext highlighter-rouge">u24</code> (yes, Zig has arbitrary integer types up to a limit), and run cast on it, I will get the bits of that number as an array type <code class="language-plaintext highlighter-rouge">[3]u8</code>. What <code class="language-plaintext highlighter-rouge">cast</code> does is turn a numeric type into an array of <code class="language-plaintext highlighter-rouge">u8</code>’s. This makes it easier to deal with at the lower level, since they are all the same.</p>
+
+<p><code class="language-plaintext highlighter-rouge">anytype</code> means that the function accepts any type for i. This is like a parameter in a dynamic language, such as python, with no types by default. In the return type, we have a call to a builtin function, this <em>is</em> allowed in Zig, since, again, types are first class at compile time. We then bitcast the int into an array of its size in bytes of <code class="language-plaintext highlighter-rouge">u8</code>s.</p>
+
+<p>This function helped me reduce a lot of repetitive code, e.g.:</p>
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">e_ehsize</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">0x40</span><span class="p">)),</span>
+</code></pre></div></div>
+<p>vs</p>
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">e_ehsize</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span> <span class="o">=</span> <span class="nb">@bitCast</span><span class="p">([</span><span class="mi">2</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span> <span class="p">(</span><span class="nb">@as</span><span class="p">(</span><span class="kt">u16</span><span class="p">,</span> <span class="mi">0x40</span><span class="p">))),</span>
+</code></pre></div></div>
+<p>This could be determined by the size of the number as we already cast it to a u16, so no reason to specify the size again in a different format.</p>
+
+<blockquote>
+  <p>Note: an alternative could be just this:</p>
+  <div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">e_ehsize</span><span class="p">:</span> <span class="kt">u16</span> <span class="o">=</span> <span class="mi">0x40</span><span class="p">,</span>
+</code></pre></div>  </div>
+  <p>I didn’t want to use this because it is higher level, and to the machine, <strong>everything</strong> is a u8 and I wanted to stay pretty low level. Also comptime meta-programming is fun.</p>
+</blockquote>
+
+<h3 id="okay-enough-talking-about-zig-back-to-elf">Okay, enough talking about Zig, back to ELF!</h3>
+
+<p>As you have seen, an ELF file can be represented as an array/buffer of u8s.
+To write the headers, we just look at what each field is in the header, fill it out with the appropriate value, and then write it to the code buffer. No magic! To understand the ELF file format more, I <strong>highly</strong> recommend reading the <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF article on Wikipedia</a> and just implementing some of the structs (with <em>hand written</em> comments) in whatever language you use.</p>
+
+<p>In an ELF header there is an <code class="language-plaintext highlighter-rouge">e_entry</code> field that contains the offset of the entry point (where the kernel should start executing) you can just set this to some code put in after the ELF header and program header and try executing the file!
+Our buffer/file looks something like this so far:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0x00 (size 0x40):
+  ELF HEADER
+    ...
+    e_entry: 0x00000056
+0x40 (size 0x56):
+  PROGRAM HEADER(s)
+0x78 (size however long the executable code is)
+  EXECUTABLE CODE
+</code></pre></div></div>
+
+<p>For the executable code, I just hard coded some x64 machine code into the binary like this (until I wrote a brainfuck x64 backend):</p>
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// 400078:	b8 e7 00 00 00       	mov    eax,0xe7</span>
+<span class="c">// 40007d:	48 8b 3c 25 87 00 40 	mov    rdi,QWORD PTR ds:0x400087</span>
+<span class="c">// 400084:	00</span>
+<span class="c">// 400085:	0f 05                	syscall</span>
+<span class="k">const</span> <span class="n">machinecode</span> <span class="o">=</span> <span class="p">[</span><span class="mi">_</span><span class="p">]</span><span class="kt">u8</span><span class="p">{</span> <span class="mi">0xb8</span><span class="p">,</span> <span class="mi">0xe7</span><span class="p">,</span> <span class="mi">0x00</span><span class="p">,</span> <span class="mi">0x00</span><span class="p">,</span> <span class="mi">0x00</span><span class="p">,</span> <span class="mi">0x48</span><span class="p">,</span> <span class="mi">0x8b</span><span class="p">,</span> <span class="mi">0x3c</span><span class="p">,</span> <span class="mi">0x25</span><span class="p">,</span> <span class="mi">0x87</span><span class="p">,</span> <span class="mi">0x00</span><span class="p">,</span> <span class="mi">0x40</span><span class="p">,</span> <span class="mi">0x00</span><span class="p">,</span> <span class="mi">0x0f</span><span class="p">,</span> <span class="mi">0x05</span><span class="p">,</span> <span class="mi">0x0</span> <span class="p">};</span>
+</code></pre></div></div>
+<p>This loads the code for exit, loads a return code from base_point+0x87, exactly like the example in the beginning with nasm, then does the syscall.</p>
+
+<blockquote>
+  <p>Note: this is the exact same layout as the nasm assembly code we saw earlier.</p>
+</blockquote>
+
+<p>It segfaults :(.</p>
+
+<p>This is because the offset of <code class="language-plaintext highlighter-rouge">e_entry</code> is relative to the <em>offset in memory</em> not in the image/buffer/file. From what i’ve seen, linux executables are loaded into memory at 0x400000 (if someone knows why this is, please tell me!), so we must add that to the e_entry point. I have this is my <code class="language-plaintext highlighter-rouge">main.zig</code> file:</p>
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">const</span> <span class="n">base_point</span><span class="p">:</span> <span class="kt">u64</span> <span class="o">=</span> <span class="mi">0x400000</span><span class="p">;</span>
+<span class="o">...</span>
+<span class="k">const</span> <span class="n">entry_off</span> <span class="o">=</span> <span class="n">base_point</span> <span class="o">+</span> <span class="n">header_off</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Now we have:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0x00 (size 0x40):
+  ELF HEADER
+    ...
+    e_entry: 0x00400078
+0x40 (size 0x56):
+  PROGRAM HEADER(s)
+0x78 (size however long the executable code is)
+  EXECUTABLE CODE
+</code></pre></div></div>
+
+<p>Now it works!</p>
+
+<p>But we don’t get any output with objdump:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ objdump -D ./code
+./code:     file format ELF64-x86-64
+</code></pre></div></div>
+
+<p>This is because it does not have any sections (well it technically has one, the executable code), section headers, or a section header string table.</p>
+
+<p>To get output with objdump, we must add all 3. Additionally, this will allow us to have different sections for bss, data, and text (code).</p>
+
+<p>A section header goes after the sections (data, bss, text, shstrtab, strtab, rodata).</p>
+
+<p>It is just another type of header.
+I define it like this:</p>
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">SHT_NOBITS</span><span class="p">:</span> <span class="kt">u32</span> <span class="o">=</span> <span class="mi">8</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">SHT_NULL</span><span class="p">:</span> <span class="kt">u32</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">SHT_PROGBITS</span><span class="p">:</span> <span class="kt">u32</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">SHT_STRTAB</span><span class="p">:</span> <span class="kt">u32</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+
+<span class="k">const</span> <span class="n">SectionHeader</span> <span class="o">=</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="c">/// offset into .shstrtab that contains the name of the section</span>
+    <span class="n">sh_name</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// type of this header</span>
+    <span class="n">sh_type</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// attrs of the section</span>
+    <span class="n">sh_flags</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// virtual addr of section in memory</span>
+    <span class="n">sh_addr</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// offset in file image</span>
+    <span class="n">sh_offset</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// size of section in bytes (0 is allowed)</span>
+    <span class="n">sh_size</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// section index</span>
+    <span class="n">sh_link</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// extra info abt section</span>
+    <span class="n">sh_info</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// alignment of section (power of 2)</span>
+    <span class="n">sh_addralign</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+
+    <span class="c">/// size of bytes of section that contains fixed-size entry otherwise 0</span>
+    <span class="n">sh_entsize</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">u8</span><span class="p">,</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Now our code looks like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0x00 (size 0x40):
+  ELF HEADER
+    ...
+    e_entry: 0x00000078
+0x40 (size 0x56):
+  PROGRAM HEADER(s)
+0x78 (size however long the sections are)
+	section .text: SHT_PROGBITS
+	  EXECUTABLE CODE
+	section .data: SHT_PROGBITS
+	  immutable data
+	section .shstrtab: SHT_STRTAB
+	  the names of all the sections
+	section .bss: SHT_NOBITS
+	  uninitalized data (this is special because it doesn't take any space in the executable, it only takes space after it is loaded by the kernel in memory)
+section headers * how many there are (4)
+</code></pre></div></div>
+
+<p>Objdumped we get nice output:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ objdump -D ./code -Mintel
+
+./code:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000400078 &lt;.text&gt;:
+  400078:	b8 e7 00 00 00       	mov    eax,0xe7
+  40007d:	48 8b 3c 25 87 00 40 	mov    rdi,QWORD PTR ds:0x400087
+  400084:	00
+  400085:	0f 05                	syscall
+	...
+
+Disassembly of section .data:
+
+0000000000400088 &lt;.data&gt;:
+  400088:	48                   	rex.W
+  400089:	65 6c                	gs ins BYTE PTR es:[rdi],dx
+  40008b:	6c                   	ins    BYTE PTR es:[rdi],dx
+  40008c:	6f                   	outs   dx,DWORD PTR ds:[rsi]
+  40008d:	20 57 6f             	and    BYTE PTR [rdi+0x6f],dl
+  400090:	72 6c                	jb     0x4000fe
+  400092:	64                   	fs
+</code></pre></div></div>
+<p>The data section is just “Hello World”, but objdump tries to interpret it as x64 code so we get some weird results.
+And, with readelf, we get the right results too.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ readelf -a ./code
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x400078
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          175 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         1
+  Size of section headers:           64 (bytes)
+  Number of section headers:         5
+  Section header string table index: 3
+
+Section Headers:
+  [Nr] Name              Type             Address           Offset
+       Size              EntSize          Flags  Link  Info  Align
+  [ 0]                   NOBITS           0000000000000000  00000000
+       0000000000000000  0000000000000000           0     0     0
+  [ 1] .text             PROGBITS         0000000000400078  00000078
+       0000000000000010  0000000000000000           0     0     0
+  [ 2] .data             PROGBITS         0000000000400088  00000088
+       000000000000000b  0000000000000000           0     0     0
+  [ 3] .shstrtab         STRTAB           0000000000400093  00000093
+       000000000000001c  0000000000000000           0     0     0
+  [ 4] .bss              NOBITS           00000000004000af  000000af
+       00000000deadbeef  0000000000000000           0     0     0
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  l (large), p (processor specific)
+
+There are no section groups in this file.
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000
+                 0x00000000000001ef 0x00000000000001ef  RWE    0x100
+
+ Section to Segment mapping:
+  Segment Sections...
+   00
+
+There is no dynamic section in this file.
+
+There are no relocations in this file.
+
+The decoding of unwind sections for machine type Advanced Micro Devices X86-64 is not currently supported.
+
+No version information found in this file.
+</code></pre></div></div>
+
+<p>To write our <code class="language-plaintext highlighter-rouge">std.ArrayList(u8)</code> called <code class="language-plaintext highlighter-rouge">code</code> to a file, it is very easy:</p>
+<div class="language-zig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">file</span> <span class="o">=</span> <span class="k">try</span> <span class="n">std</span><span class="p">.</span><span class="py">fs</span><span class="p">.</span><span class="nf">cwd</span><span class="p">().</span><span class="nf">createFile</span><span class="p">(</span><span class="s">"code"</span><span class="p">,</span> <span class="o">.</span><span class="p">{</span>
+	<span class="p">.</span><span class="py">mode</span> <span class="o">=</span> <span class="mi">0</span><span class="n">o777</span><span class="p">,</span> <span class="c">// executable</span>
+<span class="p">});</span>
+<span class="k">defer</span> <span class="n">file</span><span class="p">.</span><span class="nf">close</span><span class="p">();</span>
+<span class="mi">_</span> <span class="o">=</span> <span class="k">try</span> <span class="n">file</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="n">code</span><span class="p">.</span><span class="py">items</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><a href="https://ziglearn.org/chapter-1/#defer">Defer</a> in zig is useful for freeing resources. A defer will execute at the end of the current block.</p>
+
+<p>I wrote this post because I wanted to de-magicify how executables work. They are not some magic incarnation that only fancy compilers can output. In a few hundred lines of code, you can write a “linker” that can output an executable. With a few more, a “compiler” can be written.</p>
+
+<p>All the code in this post can be found <a href="https://github.com/g-w1/zelf/commit/7a2030984fc808d46a63937aef42de1c41f82672">here</a>. Note, the later commits show the brainfuck backend, so if you want to read them you can, although at the time of writing, they are not done.</p>
+
+<p>We are now ready write a brainfuck code generation backend for our linker! (In the next post!)</p>
+
+<blockquote>
+  <p>Thanks to <a href="https://olind.xyz/">justanotherstrange</a> for looking for typos and fixing them.</p>
+</blockquote>
+
+  </div><a class="u-url" href="/blog/zig/low-level/2021/03/15/elf-linux.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Feel to reach out to me at jacoblevgw at gmail</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

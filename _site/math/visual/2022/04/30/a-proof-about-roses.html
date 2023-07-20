@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>A Proof About Roses | Jacob’s Blog</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="A Proof About Roses" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A proof about roses? Who would have thought!" />
+<meta property="og:description" content="A proof about roses? Who would have thought!" />
+<link rel="canonical" href="http://localhost:4000/blog/math/visual/2022/04/30/a-proof-about-roses.html" />
+<meta property="og:url" content="http://localhost:4000/blog/math/visual/2022/04/30/a-proof-about-roses.html" />
+<meta property="og:site_name" content="Jacob’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-04-30T02:22:22-04:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="A Proof About Roses" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-04-30T02:22:22-04:00","datePublished":"2022-04-30T02:22:22-04:00","description":"A proof about roses? Who would have thought!","headline":"A Proof About Roses","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/blog/math/visual/2022/04/30/a-proof-about-roses.html"},"url":"http://localhost:4000/blog/math/visual/2022/04/30/a-proof-about-roses.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/blog/feed.xml" title="Jacob&apos;s Blog" />
+</head>
+
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+
+
+  <body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Jacob&#39;s Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/projects/">Projects</a><a class="page-link" href="/blog/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">A Proof About Roses</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-04-30T02:22:22-04:00" itemprop="datePublished">Apr 30, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>A proof about roses? Who would have thought!</p>
+
+<p>In this case, a rose is a shape generated in a polar graph from the equation</p>
+
+\[r = A\cos(n \theta + \phi)\]
+
+<p>graphed in the domain \([0, 2\pi]\).</p>
+
+<p><img src="/blog/assets/rose.1.png" alt="Rose generated from r = cos(2θ)" /></p>
+
+<p>However, something peculiar happens when you change the coefficient to \(\theta\) (\(n\)).</p>
+
+<p>When \(n\) is even, \(2n\) petals are produced. On the other hand, when it is odd, \(n\) petals are produced (after \(\pi\), the petals go back over on themselves)!</p>
+
+<p><img src="/blog/assets/rose.2.png" alt="picture illustrating previous point" /></p>
+
+<p>My teacher said that there were proofs, but they involved calculus, so naturally I took it upon myself as a challenge to prove it without calculus!</p>
+
+<p>The Proof Follows:</p>
+
+<p>Assume for the proof that \(n \in \text{the set of all odd numbers}\).</p>
+
+<blockquote>
+  <p>At \(\pi\), \(\cos(n\theta)\) will always be \(-1\), while \(\cos(2n\theta)\) will always be 1.</p>
+</blockquote>
+
+<p>Proving the above statement will allow us to conclude the proof.</p>
+
+<p>Recall the function for period of a sinusoidal: the period of a function of the form \(\cos(mx)\) is \(\text{period} = \frac{2\pi}{m}\). Rearranging this with some algebra, we get \(m = \frac{2\pi}{\text{period}}\). At \(2\pi\), \(m\) periods will have been completed, so it follows that at \(\pi\), \(m/2\) periods will have been completed. If \(m\) is an odd number, as it is in our case, then the amount of periods completed at \(\pi\) will have a fractional component of \(1/2\). When the amount of periods completed has a fractional component of \(1/2\), in a regular cosine curve, it means that the function output must be \(-1\) because that is the value of cosine at half a cycle.</p>
+
+<p>Conversely, we can prove that where the coefficient is even, in the case of \(\cos(2n\theta)\), the output at \(\pi\) <em>must</em> be \(1\) with the same logic. At \(\pi\), \(2n/2 = n\) periods have been completed, which means that the value must be the same as the start of a cycle in a cose graph which is \(1\).</p>
+
+<p>Okay, we have now established this, but how does it help us? Recall that in a polar graph, negating the radius is the same as adding \(\pi\) to \(\theta\). Adding \(\pi\) to a cosine graph will shift it left by \(\pi\). So for any polar graph, taking the graph from \([\pi, 2\pi]\), multiplying it by -1, and translating it to the domain \([0, \pi]\) will produce the <strong>exact same graph</strong>. Since a graph in the second half of a period, when we multiply \(\theta\) by an odd number, from \([\pi, 2\pi]\), is \(-1\) times the graph in the first half of the period (because the periods are exactly \(1/2\) period out of sync), <strong>when you shift left and multiply the graph by \(-1\), it overlaps perfectly with the graph from \([0, \pi]\)</strong>! This causes there to be no new petals drawn.</p>
+
+<p>And since multiplying \(\theta\) by an even coefficient leaves it at the start of a cycle at \(\pi\), it <strong>does not overlap on itself when multiplied by \(-1\) and shifted by \(\pi\) to the left</strong>. This causes new petals to be drawn where they don’t overlap.</p>
+
+<p>Check out these examples for visual intuition (pay attention to graph label numbers: they are flipped):</p>
+
+<p><img src="/blog/assets/proof roses odd v.png" alt="just some visual intuition for it" /></p>
+
+<p><img src="/blog/assets/proof roses even v.png" alt="just some visual intuition for it again" /></p>
+
+<p>QED!!!</p>
+
+  </div><a class="u-url" href="/blog/math/visual/2022/04/30/a-proof-about-roses.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Feel to reach out to me at jacoblevgw at gmail</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
