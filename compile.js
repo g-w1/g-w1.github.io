@@ -104,7 +104,7 @@ let exerciseshtml = `<head>
 <h1>Solutions to Math Exercises</h1><hr>`;
 for (let bk in books) {
   book = books[bk];
-  exerciseshtml += `<h2><a href="${book.link}">${book.title}</a>, ${book.author}</h2>`;
+  exerciseshtml += `<b><a href="${book.link}">${book.title}</a>, ${book.author}</b>`;
   for (exercise of book.exercises.reverse()) {
     exerciseshtml += `<p><a href="${exercise.path}">${exercise.num}</a></p>`;
   }
