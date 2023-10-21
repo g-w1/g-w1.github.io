@@ -1,0 +1,15 @@
+Exercise 3.1. Why isn’t the multiplicity factor (3.18) just $n!$? After all, we started this discussion by stipulating that the balls, in addition to having colors, also carry labels $(1, 2, . . . , N)$, so that different permutations of the red balls among themselves, which give the $r!$ in the denominator of (3.18), are distinguishable arrangements.
+
+Hint: In (3.15) we are not specifying which red balls and which white ones are to be drawn.
+---
+We don't care about the labels on the white balls.
+
+If the multiplicity factor was just $n!$ instead of $(n \choose r)$, we would be multiplying by all the possible configurations of <b>all</b> the balls, not just the <b>red</b> balls.
+
+Essentially, we combine
+
+$$P(R_1 ... R_r, W_{r+1} ... W_n|B) = \frac{M!(N-M)!(N-n)!}{(M-r)!(N-M-w)!(N)!},$$
+
+which is the probability of drawing $r$ red balls in $r+w$ draws, with the amount of ways to draw $r$ balls in $n$, which is just $(n \choose r)$. The white balls don't matter at all.
+
+TODO: I'm not sure if this explanation is sufficient.
