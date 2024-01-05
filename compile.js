@@ -94,6 +94,7 @@ traverseDir("rawsolutions", (filePath) => {
   writeHTML(parseExercise(filePath), outputPath + ".html");
   const [book, exercise] = getBookAndExercise(filePath);
   books[book].exercises.push({ path: "/" + outputPath, num: exercise });
+  console.log(`added ${outputPath}`);
 });
 
 let exerciseshtml = `<head>
