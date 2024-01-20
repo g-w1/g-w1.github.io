@@ -38,6 +38,23 @@
   <p>You can give me anonymous feedback <a href="https://www.admonymous.co/jacoblevgw">here</a>.</p>
 
   <hr>
-  <p>The first principle is that you must not fool yourself — and you are the easiest person to fool.
+  <p id="random-quote">The first principle is that you must not fool yourself — and you are the easiest person to fool.
   <br>&nbsp;Richard Feynman
 </body>
+<script>
+let quotes = [
+  {
+    author: "Richard Feynman",
+    quote: "The first principle is that you must not fool yourself — and you are the easiest person to fool."
+  },
+  {
+    author: "Henry David Thoreau",
+    quote: "Simplify, simplify, simplify!"
+  }
+];
+function randomChoice(arr) {
+    return arr[Math.floor(arr.length * Math.random())];
+}
+let quote = randomChoice(quotes);
+document.getElementById("random-quote").innerHTML = `${quote.quote}\n<br>&nbsp;${quote.author}`;
+</script>
