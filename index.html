@@ -5,38 +5,33 @@
 </head>
 
 <body>
-  <h2>Jacob G-W</h1>
+  <h2>Jacob G-W</h2>
 
-  <h3>Check out <a href="/blog">my blog</a>.</h2>
+  <h3>Check out <a href="/blog">my blog</a>.</h3>
+
+  <b>Here are a few of my favorite things (random order):</b>
+  <ul id="things">
+    <li>Programming computers</li>
+    <li>Hiking</li>
+    <li>Karate</li>
+    <li>Playing the flute</li>
+    <li>Quiz Bowl</li>
+    <li>Rationality</li>
+    <li>Math</li>
+    <li>Reading science fiction</li>
+    <li>Becoming less confused</li>
+    <li>The Zig programming language</li>
+    <li>The Plan 9 operating system</li>
+  </ul>
 
   <p>
-    <b>Here are a few of my favorite things (no particular order):</b>
-    <ul>
-      <li>Programming computers</li>
-      <li>Hiking</li>
-      <li>Karate</li>
-      <li>Playing the flute</li>
-      <li>Quiz Bowl</li>
-      <li>Rationality</li>
-      <li>Math</li>
-      <li>Reading science fiction</li>
-      <li>Becoming less confused</li>
-      <li>The Zig programming language</li>
-      <li>The Plan 9 operating system</li>
-    </ul>
-    <b>Accounts:</b>
-    <ul>
-      <li>Github: <a href="https://github.com/g-w1">g-w1</a></li>
-      <li>LessWrong: <a href="https://lesswrong.com/users/g-w1">g-w1</a></li>
-      <li>Lobsters: <a href="https://lobste.rs/~g-w1">g-w1</a></li>
-      <li>Email: jacoblevgw at gmail dot com</li>
-    </ul>
+    <b>Email: jacoblevgw at the google mail</b>
   </p>
 
   <p>
-    <b>I want to build</b>
+    <b>I want to build:</b>
     <ul>
-      <li><i>The</i> Memory System. Think <a href="https://en.wikipedia.org/wiki/Memex">Memex</a> + <a href="https://apps.ankiweb.net">Anki</a>.</li>
+      <li><i>The</i> Memory System. Think <a href="https://en.wikipedia.org/wiki/Memex">Memex</a> + <a href="https://apps.ankiweb.net">Anki</a> + a super cool desk / vr headset / brain computer interface.</li>
       <li>Aligned Superintelligence</li>
     </ul>
   </p>
@@ -69,4 +64,19 @@ function randomChoice(arr) {
 }
 let quote = randomChoice(quotes);
 document.getElementById("random-quote").innerHTML = `${quote.quote}\n<br>&nbsp;${quote.author}`;
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+const ul = document.getElementById('things');
+const lis = Array.from(ul.children);
+
+shuffle(lis);
+
+ul.innerHTML = '';
+lis.forEach(li => ul.appendChild(li));
 </script>
