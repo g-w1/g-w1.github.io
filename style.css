@@ -3,4 +3,7 @@ body {
   font-size: 16px;
   margin: 20px auto;
   max-width: 700px;
+  font-family: verdana, Helvetica, sans-serif;
+  background-color: rgb(255, 255, 215);
+  cursor: url(/cursor.png);
 }
