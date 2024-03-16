@@ -74,13 +74,16 @@ let quotes = [
   {
     author: "Richard Feynman",
     quote: "What I cannot create, I do not understand."
+  },
+  {
+    quote: "It is what it is."
   }
 ];
 function randomChoice(arr) {
     return arr[Math.floor(arr.length * Math.random())];
 }
 let quote = randomChoice(quotes);
-document.getElementById("random-quote").innerHTML = `${quote.quote}\n<br>&nbsp;${quote.author}`;
+document.getElementById("random-quote").innerHTML = `${quote.quote}` + (quote.author != undefined ? `\n<br>&nbsp;${quote.author}` : "");
 
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
