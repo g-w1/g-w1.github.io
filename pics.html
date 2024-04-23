@@ -11,6 +11,7 @@ img {
 <h1>Photographs</h1>
 I love to take pictures. Here are some of my favorite that I've taken:
 <br>
+<div id="imgs">
 <img src="pics/20211128_110019.jpg"></img>
 <img src="pics/20211128_113145.jpg"></img>
 <img src="pics/20220220_080200.jpg"></img>
@@ -37,4 +38,20 @@ I love to take pictures. Here are some of my favorite that I've taken:
 <img src="pics/20231219_181854.jpg"></img>
 <img src="pics/20240329_092225.jpg"></img>
 <img src="pics/20240405_131929.jpg "></img>
+</div>
+
+<script>
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+let c = Array.from(document.querySelectorAll('img'));
+shuffle(c);
+imgs.innerHTML = '';
+c.forEach(i => imgs.appendChild(i));
+
+</script>
 </body>
