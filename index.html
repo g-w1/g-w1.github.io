@@ -42,10 +42,13 @@
   <!-- TODO come back to this once I solve suffering. Right now, I don't think this is the best for me. <p>I operate by <a href="http://sl4.org/crocker.html">Crocker's Rules</a>, so you can optimize a message to me for information rather than etiquette.</p> -->
   <p>Please give me anonymous feedback <a href="https://www.admonymous.co/jacoblevgw">here</a>! I want to become kinder, friendlier, better!</p>
 
-  <hr>
-  <p id="random-quote" onclick="newQuote()">The first principle is that you must not fool yourself — and you are the easiest person to fool.
+  <hr class="clickable" onclick="showall = !showall; toggleQuotes()">
+  <p class="clickable" id="random_quote" onclick="newQuote()">The first principle is that you must not fool yourself — and you are the easiest person to fool.
   <br>&nbsp;Richard Feynman
   </p>
+  <div id="quotesDiv">
+  <!-- this gets filled in with all the quotes except the current one when toggled -->
+  </div>
 </body>
 <script>
 let quotes = [
@@ -94,15 +97,39 @@ let quotes = [
   
   }
 ];
-function randomChoice(arr) {
-    return arr[Math.floor(arr.length * Math.random())];
+let quotei;
+let showall = false;
+function randomI(arr) {
+  return Math.floor(arr.length * Math.random());
+}
+function formatQuote(q) {
+  return `${q.quote}` + (q.author != undefined ? `\n<br>&nbsp;${q.author}` : "");
 }
 function newQuote() {
-  let quote = randomChoice(quotes);
-  document.getElementById("random-quote").innerHTML = `${quote.quote}` + (quote.author != undefined ? `\n<br>&nbsp;${quote.author}` : "");
+  quotei = randomI(quotes);
+  let quote = quotes[quotei];
+  random_quote.innerHTML = formatQuote(quote);
+  toggleQuotes();
 }
 newQuote()
 
+function toggleQuotes() {
+  quotesDiv.innerHTML = "";
+  if (showall) {
+    let qs = [];
+    for (let i = 0; i < quotes.length; i++) {
+      if (i != quotei) qs.push(quotes[i]);
+    }
+    qs.forEach(q => {
+      const p = document.createElement('p');
+      p.innerHTML = formatQuote(q);
+      quotesDiv.appendChild(p);
+    });
+  }
+
+}
+
+// shuffling the random things
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -110,11 +137,10 @@ function shuffle(array) {
     }
 }
 
-const ul = document.getElementById('things');
-const lis = Array.from(ul.children);
+const lis = Array.from(things.children);
 
 shuffle(lis);
 
-ul.innerHTML = '';
-lis.forEach(li => ul.appendChild(li));
+things.innerHTML = '';
+lis.forEach(li => things.appendChild(li));
 </script>
