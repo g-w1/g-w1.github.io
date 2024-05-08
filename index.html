@@ -1,6 +1,21 @@
 <head>
   <meta name="description" content="The first principle is not to fool yourself — and you are the easiest person to fool. - Feynman "/>
   <link rel="stylesheet" type="text/css" href="style.css">
+  <style>
+  #square {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centers both horizontally and vertically */
+    width: 20px;
+    height: 20px;
+    background-color: rgb(85, 85, 85);
+    transition: transform 0.3s ease;
+  }
+  hr {
+    background-color: rgb(85, 85, 85);
+  }
+  </style>
   <title>Jacob's Web Site</title>
 </head>
 
@@ -43,7 +58,10 @@
   <!-- TODO come back to this once I solve suffering. Right now, I don't think this is the best for me. <p>I operate by <a href="http://sl4.org/crocker.html">Crocker's Rules</a>, so you can optimize a message to me for information rather than etiquette.</p> -->
   <p>Please give me anonymous feedback <a href="https://www.admonymous.co/jacoblevgw">here</a>! I want to become kinder, friendlier, better!</p>
 
-  <hr class="clickable" onclick="showall = !showall; toggleQuotes()">
+  <div style="position: relative;">
+    <hr class="clickable" onclick="showall = !showall; toggleQuotes()">
+    <div id="square" class="clickable"></div>
+  </div>
   <p class="clickable" id="random_quote" onclick="newQuote()">The first principle is that you must not fool yourself — and you are the easiest person to fool.
   <br>&nbsp;Richard Feynman
   </p>
@@ -144,4 +162,16 @@ shuffle(lis);
 
 things.innerHTML = '';
 lis.forEach(li => things.appendChild(li));
+
+document.getElementById('square').addEventListener('click', function() {
+  showall = !showall;
+  toggleQuotes();
+  const currentTransform = this.style.transform;
+  const isRotated = currentTransform.includes('rotate(45deg)');
+  if (isRotated) {
+    this.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+  } else {
+    this.style.transform = 'translate(-50%, -50%) rotate(45deg)';
+  }
+});
 </script>
