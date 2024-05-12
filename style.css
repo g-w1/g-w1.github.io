@@ -3,7 +3,7 @@ body {
   font-size: 16px;
   margin: 20px auto;
   max-width: 700px;
-  font-family: verdana, Helvetica, sans-serif;
+  font-family: "Lora", serif;
   background-color: rgb(255, 255, 215);
 }
 * {
@@ -12,7 +12,9 @@ body {
 img {
   max-width: 100%;
 }
-
 .clickable:hover {
   cursor: pointer;
+}
+hr {
+  background-color: rgb(85, 85, 85);
 }

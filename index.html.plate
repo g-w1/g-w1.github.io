@@ -1,8 +1,7 @@
 <head>
   <meta name="description" content="The first principle is not to fool yourself — and you are the easiest person to fool. - Feynman "/>
   <link rel="stylesheet" type="text/css" href="style.css">
-  <meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Lora&display=swap" rel="stylesheet">
+  FONT
   <style>
   #square {
     position: absolute;
@@ -18,9 +17,7 @@
   <title>Jacob's Web Site</title>
 </head>
 <body>
-  <span><a href="/">Jacob G-W</a> | <a href="/blog">Blog</a> | <a href="/now">Now</a> | <a href="/pics">Photographs</a> | <a href="/books">Books</a> </span>
-<hr>
-
+  HEADERBAR
   <b>Here are a few of my favorite things (random order):</b>
   <ul id="things">
     <li>Programming computers</li>

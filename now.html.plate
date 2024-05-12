@@ -4,15 +4,12 @@
     content="The first principle is not to fool yourself — and you are the easiest person to fool. - Feynman "
   />
   <link rel="stylesheet" type="text/css" href="style.css" />
-  <meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Lora&display=swap" rel="stylesheet">
+  FONT
   <title>What is Jacob doing now?</title>
 </head>
 
 <body>
-  <span><a href="/">Jacob G-W</a> | <a href="/blog">Blog</a> | <a href="/now">Now</a> | <a href="/pics">Photographs</a> | <a href="/books">Books</a> </span>
-<hr>
-
+  HEADERBAR
   <h2>Now</h2>
 
   Currently trying to figure out what to do on a gap year. If you have any ideas
