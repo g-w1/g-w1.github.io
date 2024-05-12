@@ -15,8 +15,6 @@ for plate_fname in plates:
         for tem_name, tem_f in tems:
             with open(tem_f, 'r') as f:
                 tem = f.read()
-                print(plate)
                 plate = plate.replace(tem_name, tem)
-                print(plate)
         with open(plate_fname[:-6], 'w') as f:
             f.write(plate)
