@@ -4,6 +4,8 @@
 <style>
 img {
   padding-bottom: 10px;
+  cursor: pointer;
+  width: 100%;
 }
 </style>
 </head>
@@ -49,10 +51,10 @@ function shuffle(array) {
   }
 }
 
-let c = Array.from(document.querySelectorAll('img'));
-shuffle(c);
+let links = Array.from(document.querySelectorAll('#imgs a'));
+shuffle(links);
 imgs.innerHTML = '';
-c.forEach(i => imgs.appendChild(i));
+links.forEach(link => imgs.appendChild(link));
 
 </script>
 </body>
