@@ -1,7 +1,7 @@
 <head>
   <meta
     name="description"
-    content="The first principle is not to fool yourself — and you are the easiest person to fool. - Feynman "
+    content="The first principle is not to fool yourself — and you are the easiest person to fool. -Feynman"
   />
   <link rel="stylesheet" type="text/css" href="style.css" />
   FONT
@@ -30,19 +30,20 @@
 
   <ul>
     <li id="tmotab">
-      <i>The Making of the Atomic Bomb</i>, Richard Rhodes. Finished on 4/27/2024. 10/10. Insane book.
-      A must read for anyone interested in the history of science or WWII. Lucky
-      for me, I'm interested in both. Reading about the firebombing of Tokyo
-      made me <em>really</em> sad.
+      <i>The Making of the Atomic Bomb</i>, Richard Rhodes. Finished on
+      4/27/2024. 10/10. Insane book. A must read for anyone interested in the
+      history of science or WWII. Lucky for me, I'm interested in both. Reading
+      about the firebombing of Tokyo made me <em>really</em> sad.
     </li>
     <li id="permc">
       <p>
-        <i>Permutation City</i>, Greg Egan. Finished on 5/10/2024. 9/10. The beginning of the book felt
-        so real that I didn't need to suspend <em>any</em> disbelief. All of the
-        events felt so plausible that I felt they could have happened in real
-        life. The theory of consciousness and world-formation is very similar to
-        my best guess of what is actually true so the book felt like it was just
-        speculative fiction that could actually happen.
+        <i>Permutation City</i>, Greg Egan. Finished on 5/10/2024. 9/10. The
+        beginning of the book felt so real that I didn't need to suspend
+        <em>any</em> disbelief. All of the events felt so plausible that I felt
+        they could have happened in real life. The theory of consciousness and
+        world-formation is very similar to my best guess of what is actually
+        true so the book felt like it was just speculative fiction that could
+        actually happen.
         <span class="s"
           >Then towards the end, things started happening that I didn't think
           would actually happen in real life. Like the computers stopping
@@ -70,6 +71,45 @@
         <a href="https://en.wikipedia.org/wiki/Mathematical_universe_hypothesis"
           >Mathematical universe hypothesis</a
         >). I'm still quite unsure though.
+      </p>
+    </li>
+    <li id="speaker">
+      <p>
+        <i>Speaker for the Dead</i>, Orson Scott Card. Finished on 5/13/2024.
+        10/10. This book was so good I messed up my sleep schedule for it and
+        read it in two days. I don't even regret it. I had originally read this
+        book 4 years ago it is every bit as good as I remember it to be (I
+        didn't remember anything about the plot, only that it was insanely
+        good). It doesn't have the thrill of <i>Ender's Game</i>, and is nowhere
+        near as epic, but it makes up for that with emotional depth and plot.
+        There were a few points where I felt that the characters should have
+        made better decisions, but looking back on it, I think those points made
+        Ender even more powerful.
+        <span class="s"
+          >Why doesn't Novinha look into what was in her files to understand
+          what made Pipo and Libo die? She's a scientist. Once Ender understood
+          the Piggies and told them that humans don't have a third life, all the
+          problems were solved. This struck me as "irrational" and "weird." But
+          maybe Card included this part to show just how "stuck" Novinha was and
+          to accentuate the "savior" complex of Ender.
+        </span>
+      </p>
+      <p>
+        Some parts hit me really hard, especially towards the end, and there was
+        definitely a strong religious undertone. This was the first Card book I
+        read after reading
+        <a href="https://daystareld.com/orson-scott-card/"
+          >Daystar Eld's analysis of his views towards gay people </a
+        >. I knew that he was Christian.
+        <span class="s"
+          >And Christianity (Catholocism) does play a big part in the book. But
+          I was surprised (and delighted) with how self-aware he was about it.
+          Ender is an agnostic, although he seems to be on the path towards
+          conversion the whole book, and I could appreciate how Card
+          <em>invented his own religion</em> of speaking.
+        </span>
+        Either Card is much less one-sided than I previously thought or he is
+        really good at compartmentalizing. I hope it's the former.
       </p>
     </li>
   </ul>
