@@ -84,6 +84,10 @@ let quotes = [
     quote: "Simplify, simplify, simplify!"
   },
   {
+    quote: "I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived.",
+    author: "Henry David Thoreau"
+  },
+  {
     author: "Teddy Roosevelt",
     quote: "It is not the critic who counts; not the man who points out how the strong man stumbles, or where the doer of deeds could have done them better. The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood; ..."
   },
