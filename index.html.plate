@@ -119,6 +119,10 @@ let quotes = [
     quote: `I have come to suspect that to most people thinking is painful. Some of us are addicted to thinking. Some of us find it a necessity. Johnny enjoyed it. I even have the suspicion that he enjoyed practically nothing else. When he was dying of cancer, his brain was affected ... I think that he suffered from this loss more than I have seen any human to suffer in any other circumstances.`,
   author: "Edward Teller, on Von Neumann",
   
+  },
+  {
+    quote: "The primary thing when you take a sword in your hands is your intention to cut the enemy, whatever the means. Whenever you parry, hit, spring, strike or touch the enemy's cutting sword, you must cut the enemy in the same movement. It is essential to attain this. If you think only of hitting, springing, striking or touching the enemy, you will not be able actually to cut him.",
+    author: "Miyamoto Musashi"
   }
 ];
 shuffle(quotes);
