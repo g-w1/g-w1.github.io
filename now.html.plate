@@ -11,7 +11,7 @@
 <body>
   HEADERBAR
   <h2>Now</h2>
-  I'm at Brown University. I'm taking some proof based math classes which are super cool. I'm also doing part time research on model internals under the mentorship of Alex Turner (from DeepMind).
+  I'm at Brown University. I'm taking some proof based math classes which are pretty cool. I'm also working part time doing research in Gradient Routing (a new method to localize computation in neural networks) under the mentorship of Alex Turner.
   <hr />
-  I'll update this again soon. Last updated: Sep 7, 2024.
+  I'll update this again soon. Last updated: Oct 7, 2024.
 </body>
