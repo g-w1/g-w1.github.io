@@ -11,7 +11,7 @@
 <body>
   HEADERBAR
   <h2>Now</h2>
-  I'm at Brown University. I'm studying pure and applied maths. I'm also working part time doing research in <a href="https://arxiv.org/abs/2410.04332">Gradient Routing</a> (a new method to localize computation in neural networks) under the mentorship of Alex Turner.
+  <p>I am working on AI for forecasting.</p>
   <hr />
-  I'll update this again soon. Last updated: Mar 7, 2025.
+  I'll update this again soon. Last updated: May 11, 2025.
 </body>
