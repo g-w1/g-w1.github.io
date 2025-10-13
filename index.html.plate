@@ -21,6 +21,7 @@
   <b>Here are a few of my favorite things (random order):</b>
   <ul id="things">
     <li>Programming computers</li>
+    <li>Graphs with log scale x-axes</li>
     <li>Hiking</li>
     <li>Karate</li>
     <li>Playing the flute</li>
