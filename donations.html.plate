@@ -4,7 +4,7 @@
     content="'Once you’ve lived every human life throughout all time, you will have grown enough to be born.' —Weir"
   />
   <link rel="stylesheet" type="text/css" href="style.css" />
-  FONT
+  {{FONT}}
   <title>Donations I've Made</title>
   <style>
     .s {
@@ -21,7 +21,7 @@
 </head>
 
 <body>
-  HEADERBAR
+  {{HEADERBAR}}
   <h2>Donations</h2>
 
   <p>

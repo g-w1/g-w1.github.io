@@ -4,7 +4,7 @@
     content="The first principle is not to fool yourself — and you are the easiest person to fool. -Feynman"
   />
   <link rel="stylesheet" type="text/css" href="style.css" />
-  FONT
+  {{FONT}}
   <title>Books Jacob has read</title>
   <style>
     .s {
@@ -21,7 +21,7 @@
 </head>
 
 <body>
-  HEADERBAR
+  {{HEADERBAR}}
   <h2>Books</h2>
 
   <p>

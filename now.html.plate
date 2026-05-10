@@ -4,12 +4,12 @@
     content="The first principle is not to fool yourself — and you are the easiest person to fool. — Feynman "
   />
   <link rel="stylesheet" type="text/css" href="style.css" />
-  FONT
+  {{FONT}}
   <title>What is Jacob doing now?</title>
 </head>
 
 <body>
-  HEADERBAR
+  {{HEADERBAR}}
   <h2>Now</h2>
   <p>I am working on AI safety.</p>
   <hr />
